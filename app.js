@@ -1,4 +1,8 @@
 require('dotenv').config();
+console.log(process.env.DB_HOST);
+console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_USER:", process.env.DB_USER);
+console.log("DB_NAME:", process.env.DB_NAME);
 
 const express = require('express');
 const cors = require('cors');
@@ -8,7 +12,9 @@ const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://inventory-frontend-fermoys.s3-website-us-east-1.amazonaws.com'
+}))
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
