@@ -1,76 +1,58 @@
-const db = require('../config/db');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
-exports.register = async (req, res) => {
+const db = require('../config/db');
 
-    const { username, password } = req.body;
+const { generateToken } = require('../services/jwtService');
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+const login = (req, res) => {
 
-    const sql = `
-        INSERT INTO users (username, password)
-        VALUES (?, ?)
-    `;
+  const { username, password } = req.body;
 
-    db.query(sql, [username, hashedPassword], (err, result) => {
+  const sql = `
+    SELECT * FROM users
+    WHERE username = ?
+  `;
 
-        if (err) {
-            return res.status(500).json(err);
-        }
+  db.query(sql, [username], async (error, results) => {
 
-        res.json({
-            message: 'User registered'
-        });
+    if (error) {
+
+      return res.status(500).json(error);
+    }
+
+    if (results.length === 0) {
+
+      return res.status(401).json({
+        message: 'User not found'
+      });
+    }
+
+    const user = results[0];
+
+    const validPassword = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!validPassword) {
+
+      return res.status(401).json({
+        message: 'Invalid password'
+      });
+    }
+
+    const token = generateToken(user);
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username
+      }
     });
+  });
 };
 
-exports.login = (req, res) => {
-
-    const { username, password } = req.body;
-
-    const sql = `
-        SELECT * FROM users
-        WHERE username = ?
-    `;
-
-    db.query(sql, [username], async (err, results) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        if (results.length === 0) {
-            return res.status(401).json({
-                message: 'User not found'
-            });
-        }
-
-        const user = results[0];
-
-        const validPassword = await bcrypt.compare(
-            password,
-            user.password
-        );
-
-        if (!validPassword) {
-            return res.status(401).json({
-                message: 'Invalid password'
-            });
-        }
-
-        const token = jwt.sign(
-            {
-                id: user.id
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: '1d'
-            }
-        );
-
-        res.json({
-            token
-        });
-    });
+module.exports = {
+  login
 };

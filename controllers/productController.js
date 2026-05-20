@@ -1,47 +1,55 @@
 const db = require('../config/db');
 
-exports.getProducts = (req, res) => {
+const getProducts = (req, res) => {
 
-    const sql = `
-        SELECT * FROM products
-    `;
+  const sql = `
+    SELECT * FROM products
+    ORDER BY id DESC
+  `;
 
-    db.query(sql, (err, results) => {
+  db.query(sql, (error, results) => {
 
-        if (err) {
-            return res.status(500).json(err);
-        }
+    if (error) {
 
-        res.json(results);
-    });
+      return res.status(500).json(error);
+    }
+
+    res.json(results);
+  });
 };
 
-exports.createProduct = (req, res) => {
+const createProduct = (req, res) => {
 
-    const {
-        name,
-        quantity,
-        price
-    } = req.body;
+  const {
+    name,
+    quantity,
+    price
+  } = req.body;
 
-    const sql = `
-        INSERT INTO products
-        (name, quantity, price)
-        VALUES (?, ?, ?)
-    `;
+  const sql = `
+    INSERT INTO products
+    (name, quantity, price)
+    VALUES (?, ?, ?)
+  `;
 
-    db.query(
-        sql,
-        [name, quantity, price],
-        (err, result) => {
+  db.query(
+    sql,
+    [name, quantity, price],
+    (error, results) => {
 
-            if (err) {
-                return res.status(500).json(err);
-            }
+      if (error) {
 
-            res.json({
-                message: 'Product created'
-            });
-        }
-    );
+        return res.status(500).json(error);
+      }
+
+      res.json({
+        message: 'Product created'
+      });
+    }
+  );
+};
+
+module.exports = {
+  getProducts,
+  createProduct
 };

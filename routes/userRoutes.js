@@ -5,20 +5,13 @@ const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 
 const {
-  getProducts,
-  createProduct
-} = require('../controllers/productController');
+  getProfile
+} = require('../controllers/userController');
 
 router.get(
-  '/',
+  '/profile',
   verifyToken,
-  getProducts
-);
-
-router.post(
-  '/',
-  verifyToken,
-  createProduct
+  getProfile
 );
 
 module.exports = router;
