@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const verifyToken = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 const {
   getProducts,
@@ -19,6 +20,7 @@ router.get(
 router.post(
   '/',
   verifyToken,
+  upload.single('image'),
   createProduct
 );
 router.delete(

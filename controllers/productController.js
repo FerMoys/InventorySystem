@@ -1,4 +1,9 @@
 const db = require('../config/db');
+const {
+  PutObjectCommand
+} = require('@aws-sdk/client-s3');
+
+const s3 = require('../services/s3Service');
 
 const getProducts = (req, res) => {
 
@@ -18,35 +23,52 @@ const getProducts = (req, res) => {
   });
 };
 
-const createProduct = (req, res) => {
+const createProduct = async (req, res) => {
 
-  const {
-    name,
-    quantity,
-    price
-  } = req.body;
+  try {
 
-  const sql = `
-    INSERT INTO products
-    (name, quantity, price)
-    VALUES (?, ?, ?)
-  `;
+    const { name, quantity, price } = req.body;
 
-  db.query(
-    sql,
-    [name, quantity, price],
-    (error, results) => {
+    let imageUrl = null;
 
-      if (error) {
+    if(req.file){
 
-        return res.status(500).json(error);
-      }
+      const fileName = `${Date.now()}-${req.file.originalname}`;
 
-      res.json({
-        message: 'Product created'
-      });
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.S3_BUCKET,
+          Key: fileName,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype
+        })
+      );
+
+      imageUrl = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${fileName}`;
     }
-  );
+
+    db.query(
+      'INSERT INTO products (name, quantity, price, image_url) VALUES (?, ?, ?, ?)',
+      [name, quantity, price, imageUrl],
+      (err, result) => {
+
+        if(err){
+
+          return res.status(500).json(err);
+        }
+
+        res.json({
+          message:'Product created'
+        });
+      }
+    );
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json(error);
+  }
 };
 const deleteProduct = (req, res) => {
 
