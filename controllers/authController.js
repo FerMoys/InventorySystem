@@ -6,6 +6,8 @@ const { generateToken } = require('../services/jwtService');
 
 const login = (req, res) => {
 
+  console.log('BODY:', req.body);
+
   const { username, password } = req.body;
 
   const sql = `
@@ -15,7 +17,11 @@ const login = (req, res) => {
 
   db.query(sql, [username], async (error, results) => {
 
+    console.log('RESULTS:', results);
+
     if (error) {
+
+      console.log(error);
 
       return res.status(500).json(error);
     }
@@ -29,15 +35,21 @@ const login = (req, res) => {
 
     const user = results[0];
 
+    console.log('PASSWORD SENT:', password);
+
+    console.log('HASH DB:', user.password);
+
     const validPassword = await bcrypt.compare(
       password,
       user.password
     );
 
+    console.log('VALID PASSWORD:', validPassword);
+
     if (!validPassword) {
 
       return res.status(401).json({
-        message: 'Invalid password'
+        message: 'Invalid credentials'
       });
     }
 
@@ -52,7 +64,40 @@ const login = (req, res) => {
     });
   });
 };
+const register = async (req, res) => {
+
+  const { username, password } = req.body;
+
+  try {
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.query(
+
+      'INSERT INTO users (username, password) VALUES (?, ?)',
+
+      [username, hashedPassword],
+
+      (err, result) => {
+
+        if (err) {
+
+          return res.status(500).json(err);
+        }
+
+        res.status(201).json({
+          message: 'User created'
+        });
+      }
+    );
+
+  } catch (error) {
+
+    res.status(500).json(error);
+  }
+};
 
 module.exports = {
-  login
+  login,
+  register
 };

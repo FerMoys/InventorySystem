@@ -48,8 +48,32 @@ const createProduct = (req, res) => {
     }
   );
 };
+const deleteProduct = (req, res) => {
+
+  const { id } = req.params;
+
+  db.query(
+
+    'DELETE FROM products WHERE id=?',
+
+    [id],
+
+    (err, result) => {
+
+      if (err) {
+
+        return res.status(500).json(err);
+      }
+
+      res.json({
+        message: 'Product deleted'
+      });
+    }
+  );
+};
 
 module.exports = {
   getProducts,
-  createProduct
+  createProduct,
+  deleteProduct
 };
