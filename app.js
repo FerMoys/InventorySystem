@@ -6,33 +6,50 @@ const cors = require('cors');
 
 const app = express();
 
+/* =========================
+   CORS
+========================= */
+
 app.use(cors({
-  origin: 'http://inventory-frontend-fermoys.s3-website-us-east-1.amazonaws.com'
-}))
+  origin: 'http://inventory-frontend-fermoys.s3-website-us-east-1.amazonaws.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+/* =========================
+   MIDDLEWARES
+========================= */
 
 app.use(express.json());
 
+/* =========================
+   ROUTES
+========================= */
+
 const authRoutes = require('./routes/authRoutes');
+
 const productRoutes = require('./routes/productRoutes');
+
 const userRoutes = require('./routes/userRoutes');
 
 app.use('/auth', authRoutes);
 
 app.use('/products', productRoutes);
 
-app.use(express.json());
+app.use('/users', userRoutes);
 
-const authRoutes = require('./routes/authRoutes');
-
-const productRoutes = require('./routes/productRoutes');
-
-app.use('/auth', authRoutes);
-
-app.use('/products', productRoutes);
+/* =========================
+   TEST ROUTE
+========================= */
 
 app.get('/', (req, res) => {
+
   res.send('Inventory API Running');
 });
+
+/* =========================
+   SERVER
+========================= */
 
 const PORT = process.env.PORT || 3000;
 
