@@ -2,11 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 
-const verifyToken = require('../middleware/authMiddleware');
-
 const {
   getProfile
 } = require('../controllers/userController');
+
+const verifyToken = require('../middlewares/authMiddleware');
 
 router.get(
   '/profile',

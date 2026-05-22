@@ -2,22 +2,23 @@ const db = require('../config/db');
 
 const getProfile = (req, res) => {
 
-  const sql = `
-    SELECT
-      id,
-      username
-    FROM users
-    WHERE id = ?
-  `;
+  const userId = req.user.id;
 
   db.query(
-    sql,
-    [req.user.id],
-    (error, results) => {
+    'SELECT id, username, email, role FROM users WHERE id = ?',
+    [userId],
+    (err, results) => {
 
-      if (error) {
+      if (err) {
 
-        return res.status(500).json(error);
+        return res.status(500).json(err);
+      }
+
+      if (results.length === 0) {
+
+        return res.status(404).json({
+          message: 'User not found'
+        });
       }
 
       res.json(results[0]);
