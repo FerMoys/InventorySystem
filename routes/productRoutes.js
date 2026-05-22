@@ -2,8 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 
-const verifyToken = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const multer = require('multer');
+
+const upload = multer({
+  storage: multer.memoryStorage()
+});
 
 const {
   getProducts,
@@ -11,21 +14,14 @@ const {
   deleteProduct
 } = require('../controllers/productController');
 
-router.get(
-  '/',
-  verifyToken,
-  getProducts
-);
+router.get('/', getProducts);
 
 router.post(
   '/',
-  verifyToken,
   upload.single('image'),
   createProduct
 );
-router.delete(
-  '/:id',
-  verifyToken, 
-  deleteProduct
-);
+
+router.delete('/:id', deleteProduct);
+
 module.exports = router;
